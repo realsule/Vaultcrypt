@@ -2,8 +2,9 @@ from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, DateTime, Text, Table, ForeignKey
 import datetime
 
-Base = declarative_base()
+Base = declarative_base() # Base class for all ORM models
 
+# Association table for Many-to-Many between entries and tags
 entry_tags = Table(
     'entry_tags', Base.metadata,
     Column('entry_id', Integer, ForeignKey('vault_entries.id'), primary_key=True),
@@ -15,8 +16,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    entries = relationship('VaultEntry', back_populates='owner')
-    audits = relationship('AuditLog', back_populates='user')
+    entries = relationship('VaultEntry', back_populates='owner')# One user - many entries
+    audits = relationship('AuditLog', back_populates='user')# One user - many audit logs
 
     def to_dict(self):
         return {'id': self.id, 'username': self.username, 'created_at': self.created_at.isoformat()}
@@ -26,12 +27,12 @@ class VaultEntry(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False, index=True)
     username = Column(String, nullable=True)
-    password = Column(Text, nullable=False)  # encrypted bytes stored as b64
+    password = Column(Text, nullable=False)  # encrypted bytes stored as base64 text
     notes = Column(Text, nullable=True)
     owner_id = Column(Integer, ForeignKey('users.id'))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    owner = relationship('User', back_populates='entries')
+    owner = relationship('User', back_populates='entries')# Many entries - one user
     tags = relationship('Tag', secondary=entry_tags, back_populates='entries')
 
     def to_dict(self):
@@ -62,7 +63,7 @@ class AuditLog(Base):
     details = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-    user = relationship('User', back_populates='audits')
+    user = relationship('User', back_populates='audits')# Who performed this action
 
     def to_tuple(self):
         return (self.id, self.user_id, self.action, self.created_at.isoformat())

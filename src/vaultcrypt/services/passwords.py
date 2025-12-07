@@ -7,6 +7,7 @@ from vaultcrypt.db import models
 
 
 def generate_password(length: int = 16, use_symbols: bool = True) -> str:
+    # Secure random password generator
     alphabet = string.ascii_letters + string.digits
     if use_symbols:
         alphabet += '!@#$%^&*()-_=+[]{};:,.<>?'
@@ -16,14 +17,19 @@ def generate_password(length: int = 16, use_symbols: bool = True) -> str:
 def add_entry(title: str, username: str | None, password_plain: str, owner: str = 'local', tags: List[str] | None = None):
     db = SessionLocal()
     try:
+         # Ensure owner user exists
         user = db.query(models.User).filter(models.User.username == owner).first()
         if not user:
             user = models.User(username=owner)
             db.add(user)
             db.commit()
             db.refresh(user)
+            # Encrypt password and create entry
         enc = encrypt_bytes(password_plain.encode('utf-8'))
+
         entry = models.VaultEntry(title=title, username=username, password=enc.decode('utf-8'), owner=user)
+
+        # Attach tags if any
         if tags:
             tag_objs = []
             for t in tags:

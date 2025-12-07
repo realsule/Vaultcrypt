@@ -10,4 +10,4 @@ QUOTES = [
 
 
 def random_quote() -> str:
-    return random.choice(QUOTES)
+    return random.choice(QUOTES) # return a random motivational quote

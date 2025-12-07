@@ -8,14 +8,14 @@ from vaultcrypt.utils import show_quote
 from vaultcrypt.db.seed import seed
 from vaultcrypt.logger import logger
 
-app = typer.Typer()
+app = typer.Typer() # CLI app instance(main entry point for vaultcrypt commands)
 
 @app.command()
 def init(sample: bool = typer.Option(False, '--sample')):
     """Initialize DB and optional seed."""
     models.Base.metadata.create_all(bind=db_s.engine)
     if sample:
-        seed()
+        seed()# Optionally seed with sample data
     typer.echo('Initialized DB')
     show_quote(quotes.random_quote())
 
@@ -23,7 +23,7 @@ def init(sample: bool = typer.Option(False, '--sample')):
 @app.command()
 def gen_file_key(path: Optional[str] = typer.Option(None, '--out')):
     """Generate and save a file encryption key."""
-    k = files.generate_file_key(path)
+    k = files.generate_file_key(path) # Create file key
     typer.echo(f'Wrote file key to {path or files.FILE_KEY_PATH if hasattr(files, "FILE_KEY_PATH") else "default path"}')
     show_quote(quotes.random_quote())
 
@@ -34,7 +34,7 @@ def encrypt_file(path: str, keyfile: Optional[str] = typer.Option(None, '--key')
     key = None
     if keyfile:
         key = open(keyfile, 'rb').read()
-    out = files.encrypt_file(path, key)
+    out = files.encrypt_file(path, key)# Encrypt the file
     typer.echo(f'Encrypted -> {out}')
     show_quote(quotes.random_quote())
 
@@ -45,7 +45,7 @@ def decrypt_file(path: str, keyfile: Optional[str] = typer.Option(None, '--key')
     key = None
     if keyfile:
         key = open(keyfile, 'rb').read()
-    out = files.decrypt_file(path, key)
+    out = files.decrypt_file(path, key)# Decrypt the file
     typer.echo(f'Decrypted -> {out}')
     show_quote(quotes.random_quote())
 
@@ -53,7 +53,7 @@ def decrypt_file(path: str, keyfile: Optional[str] = typer.Option(None, '--key')
 @app.command()
 def bulk_encrypt(folder: str, pattern: str = typer.Option('*', '--pattern')):
     """Encrypt all files in a folder matching a glob pattern."""
-    outs = files.bulk_encrypt_folder(folder, pattern=pattern)
+    outs = files.bulk_encrypt_folder(folder, pattern=pattern)# Encrypt folder by pattern
     typer.echo(f'Encrypted {len(outs)} files')
     show_quote(quotes.random_quote())
 
@@ -70,7 +70,7 @@ def generate_password(length: int = typer.Option(16, '--length'), symbols: bool 
 def add_entry(title: str = typer.Option(..., '--title'), username: Optional[str] = typer.Option(None, '--username'), password: Optional[str] = typer.Option(None, '--password'), owner: str = typer.Option('local', '--owner'), tags: Optional[List[str]] = typer.Option(None, '--tag')):
     """Add a vault entry. If password omitted it will be generated."""
     if not password:
-        password = passwords.generate_password()
+        password = passwords.generate_password()# Auto-generate password if not provided
     entry = passwords.add_entry(title=title, username=username, password_plain=password, owner=owner, tags=tags)
     typer.echo(f'Added entry id={entry.id} title={entry.title}')
     show_quote(quotes.random_quote())
